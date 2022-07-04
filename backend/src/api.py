@@ -45,7 +45,7 @@ def retrieve_all_drinks():
             }
         )
     except:
-        abort(400)
+        abort(422)
 
 
 '''
@@ -73,7 +73,7 @@ def retrieve_all_drinks_detail(payload):
             }
         )
     except:
-        abort(400)
+        abort(422)
 
 
 '''
@@ -96,14 +96,14 @@ def create_new_drink(payload):
     try:
         new_drink = Drink(
             title=new_title,
-            recipe=new_recipe,
+            recipe=json.dumps(new_recipe)
             )
         new_drink.insert()
 
         return jsonify(
             {
                 "success": True,
-                "drinks": new_drink,
+                "drinks": [new_drink.long()],
             }
         )
     except:
@@ -127,20 +127,21 @@ def update_drink(payload, drink_id):
 
     new_title = body.get("title", None)
     new_recipe = body.get("recipe", None)
+
     try:
         drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
-        if question is None:
+        if drink is None:
             abort(404)
         drink.title = new_title
-        drink.recipe = new_recipe
+        drink.recipe = json.dumps(new_recipe)
         drink.update()
 
-        updated_drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
+        # updated_drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
 
         return jsonify(
             {
                 "success": True,
-                "drinks": updated_drink.long(),
+                "drinks": [drink.long()],
             }
         )
     except:
@@ -161,7 +162,7 @@ def update_drink(payload, drink_id):
 def delete_drink(payload, drink_id):
     try:
         drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
-        if question is None:
+        if drink is None:
             abort(404)
 
         drink.delete()
@@ -200,14 +201,6 @@ def unprocessable(error):
                     }), 404
 
 '''
-@app.errorhandler(400)
-def bad_request(error):
-    return jsonify({
-        "success": False, 
-        "error": 400, 
-        "message": "bad request"
-    }), 400
-
 
 '''
 @TODO implement error handler for 404
